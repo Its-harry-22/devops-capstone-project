@@ -29,7 +29,6 @@ def index():
         jsonify(
             name="Account REST API Service",
             version="1.0",
-            # paths=url_for("list_accounts", _external=True),
         ),
         status.HTTP_200_OK,
     )
@@ -42,7 +41,7 @@ def index():
 def create_accounts():
     """
     Creates an Account
-    This endpoint will create an Account based the data in the body that is posted
+    This endpoint will create an Account based on the data in the body that is posted
     """
     app.logger.info("Request to create an Account")
     check_content_type("application/json")
@@ -50,45 +49,26 @@ def create_accounts():
     account.deserialize(request.get_json())
     account.create()
     message = account.serialize()
-    # Uncomment once get_accounts has been implemented
-    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    location_url = url_for("read_account", account_id=account.id, _external=True)
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
 
 ######################################################################
-# LIST ALL ACCOUNTS
-######################################################################
-
-# ... place you code here to LIST accounts ...
-
-
-######################################################################
 # READ AN ACCOUNT
 ######################################################################
-
-# ... place you code here to READ an account ...
-
-
-######################################################################
-# UPDATE AN EXISTING ACCOUNT
-######################################################################
-
-# ... place you code here to UPDATE an account ...
-
-
-######################################################################
-# DELETE AN ACCOUNT
-######################################################################
-
-# ... place you code here to DELETE an account ...
+@app.route("/accounts/<int:id>", methods=["GET"])
+def read_account(id):
+    """Read an Account by ID"""
+    account = Account.find(id)
+    if account is None:
+        abort(status.HTTP_404_NOT_FOUND)
+    return jsonify(account.serialize()), status.HTTP_200_OK
 
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
 
 def check_content_type(media_type):
     """Checks that the media type is correct"""
@@ -100,3 +80,4 @@ def check_content_type(media_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {media_type}",
     )
+
